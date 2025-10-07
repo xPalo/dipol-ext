@@ -1,47 +1,73 @@
-async function translateText(text, targetLang) {
+async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
-      { action: "translate", text, targetLang },
+      {
+        action: "translate",
+        text: rawText,
+        sourceLang: sourceLang,
+        targetLang: targetLang
+      },
       (response) => {
-        if (response?.translation) resolve(response.translation);
-        else resolve("");
+        if (chrome.runtime.lastError) {
+          console.error("Messaging error:", chrome.runtime.lastError.message);
+          resolve(rawText);
+          return;
+        }
+        if (!response) {
+          console.error("No response received");
+          resolve(rawText);
+          return;
+        }
+        if (response.error) {
+          console.error("Translation error:", response.error);
+          resolve(rawText);
+          return;
+        }
+        resolve(response.translated);
       }
     );
   });
 }
 
-async function processTables() {
-  const tables = Array.from(document.querySelectorAll("table")).filter((table) =>
-    table.querySelector("textarea")
-  );
+async function runTranslations() {
+  const tables = document.querySelectorAll("form table");
 
   for (const table of tables) {
-    const textareas = table.querySelectorAll("textarea");
-    if (textareas.length < 3) continue;
+    const tds = table.querySelectorAll("td textarea");
 
-    const plTextarea = textareas[0];
-    const enTextarea = textareas[1];
-    const skTextarea = textareas[2];
+    if (tds.length === 3) {
+      const [pl, en, sk] = tds;
 
-    if (skTextarea.value.trim().length > 0) continue;
+      if (!sk || sk.value.trim()) continue;
 
-    const sourceText = enTextarea.value.trim() || plTextarea.value.trim();
-    if (!sourceText) continue;
+      let sourceText = "";
+      let sourceLang = "";
 
-    const translated = await translateText(sourceText, "sk");
+      if (pl && pl.value.trim()) {
+        sourceText = pl.value.trim();
+        sourceLang = "PL";
+      } else if (en && en.value.trim()) {
+        sourceText = en.value.trim();
+        sourceLang = "EN";
+      } else {
+        continue;
+      }
 
-    if (translated) {
-      skTextarea.value = translated;
+      sk.value = "Translating...";
+
+      try {
+        const translated = await translateText(sourceText, sourceLang, "SK");
+        sk.value = translated;
+      } catch (err) {
+        console.error("Translation failed:", err);
+        sk.value = "[Translation error]";
+      }
     }
-
-    await new Promise((r) => setTimeout(r, 500));
   }
-
-  console.log("[Auto Translator] Všetky tabuľky spracované.");
 }
 
-// Spusti po načítaní stránky
-window.addEventListener("load", () => {
-  console.log("[Auto Translator] Stránka načítaná, začínam preklad...");
-  processTables();
-});
+const btn = document.createElement("button");
+btn.id = "auto-translate-btn";
+btn.textContent = "🔄 Automaticky preložiť PL/EN → SK";
+btn.onclick = runTranslations;
+document.body.appendChild(btn);

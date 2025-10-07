@@ -1,17 +1,28 @@
 {
   "manifest_version": 3,
-  "name": "Dipol Translator",
-  "version": "1.0",
-  "description": "Translates text fields automatically.",
-  "permissions": ["scripting", "activeTab"],
+  "name": "DIPOL Auto Translator (DeepL)",
+  "version": "1.1",
+  "description": "Preklad textov v tabuľkách cez DeepL po kliknutí na tlačidlo.",
+  "permissions": ["scripting", "activeTab", "storage"],
+  "host_permissions": ["https://api-free.deepl.com/*", "https://api.deepl.com/*"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://example.com/translator*"],
+      "matches": [
+        "https://www.dipol.com.pl/*",
+        "https://*/*",
+        "http://*/*",
+        "file:///*"
+      ],
       "js": ["content.js"],
+      "css": ["styles.css"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "options.html",
+    "default_title": "Translator"
+  }
 }
