@@ -6,7 +6,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const { deeplKey } = await chrome.storage.sync.get("deeplKey");
 
         if (!deeplKey) {
-          sendResponse({ error: "Missing DeepL API key" });
+          sendResponse({ error: "Missing DeepL API key!" });
           return;
         }
 

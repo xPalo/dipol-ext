@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   saveBtn.addEventListener("click", async () => {
     const value = input.value.trim();
+
     if (!value) {
       status.textContent = "Please enter a valid API key.";
       status.style.color = "red";

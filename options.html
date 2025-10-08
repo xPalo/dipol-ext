@@ -1,14 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title>DeepL API Key</title>
+    <meta charset="utf-8" />
+    <title>DIPOL Auto Translator — Settings</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f7f8fa;
+        color: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 420px;
+        text-align: center;
+      }
+
+      h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        color: #007aff;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        outline: none;
+        transition: border 0.2s ease;
+      }
+
+      input[type="text"]:focus {
+        border-color: #007aff;
+      }
+
+      button {
+        margin-top: 1rem;
+        background-color: #007aff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      button:hover {
+        background-color: #005fce;
+      }
+
+      #status {
+        margin-top: 1rem;
+        font-size: 13px;
+        color: #007a55;
+        min-height: 1em;
+      }
+    </style>
   </head>
   <body>
-    <h3>DeepL API Key</h3>
-    <input id="apiKey" type="text" placeholder="DeepL-Auth-Key ..." size="60">
-    <button id="save">Save</button>
-    <p id="status"></p>
+    <div class="container">
+      <h3>🔑 DeepL API Key</h3>
+      <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..." />
+      <button id="save">💾 Save</button>
+      <p id="status"></p>
+    </div>
+
     <script src="options.js"></script>
   </body>
 </html>
