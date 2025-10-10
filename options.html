@@ -27,7 +27,7 @@
       h3 {
         margin-top: 0;
         margin-bottom: 1rem;
-        font-size: 1.25rem;
+        font-size: 1.3rem;
         color: #007aff;
       }
 
@@ -51,7 +51,7 @@
         background-color: #007aff;
         color: white;
         border: none;
-        padding: 10px 20px;
+        padding: 10px 10px;
         border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
@@ -68,6 +68,24 @@
         color: #007a55;
         min-height: 1em;
       }
+
+      .usage-section {
+        border-top: 1px solid #eee;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        font-weight: bold;
+      }
+
+      .usage-section h4 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        color: #444;
+      }
+
+      #usage {
+        font-size: 14px;
+        color: #555;
+      }
     </style>
   </head>
   <body>
@@ -76,6 +94,11 @@
       <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..." />
       <button id="save">💾 Save</button>
       <p id="status"></p>
+
+      <div class="usage-section">
+        <h4>📊 Usage</h4>
+        <p id="usage">–</p>
+      </div>
     </div>
 
     <script src="options.js"></script>
