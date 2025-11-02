@@ -99,17 +99,51 @@ async function runAutosave() {
         );
 
     if (saveButtons.length === 0) {
-        showErrorPopup("Žiadne 'Save' tlačidlá neboli nájdené.");
+        alert("Žiadne 'Save' tlačidlá neboli nájdené.");
         return;
     }
 
-    let index = 0;
-    for (const btn of saveButtons) {
+    console.log(`Našiel som ${saveButtons.length} tlačidiel na uloženie.`);
+
+    const scriptEl = document.createElement("script");
+    scriptEl.id = "autosave-confirm-bypass";
+    scriptEl.textContent = `
+    (function() {
+      window._autosaveBypassActive = true;
+      const originalConfirm = window.confirm;
+      const originalAlert = window.alert;
+      window.confirm = function(msg) { 
+        console.log("[AutoConfirm] Potvrdené:", msg);
+        return true; 
+      };
+      window.alert = function(msg) { 
+        console.log("[AutoAlert] Preskočené:", msg);
+      };
+      window._restoreAlerts = function() {
+        window.confirm = originalConfirm;
+        window.alert = originalAlert;
+        window._autosaveBypassActive = false;
+        console.log("[AutoConfirm] Obnovené pôvodné správanie.");
+      };
+    })();
+    `;
+    (document.head || document.documentElement).appendChild(scriptEl);
+
+    for (let i = 0; i < saveButtons.length; i++) {
+        const btn = saveButtons[i];
         btn.click();
-        console.log(`Autosave: klikol som na ${index + 1}/${saveButtons.length}`);
-        index++;
-        await new Promise(r => setTimeout(r, 500));
+        console.log(`Autosave: klikol som na ${i + 1}/${saveButtons.length}`);
+        await new Promise(r => setTimeout(r, 700));
     }
+
+    const cleanupScript = document.createElement("script");
+    cleanupScript.textContent = `
+    if (window._autosaveBypassActive && typeof window._restoreAlerts === 'function') {
+      window._restoreAlerts();
+    }
+    `;
+    (document.head || document.documentElement).appendChild(cleanupScript);
+    cleanupScript.remove();
 
     showErrorPopup(`Hotovo! Uložených ${saveButtons.length} položiek.`);
 }
