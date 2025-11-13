@@ -7,10 +7,12 @@ async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
             return;
         }
 
+        const { text: preparedText, mappings } = preprocessCustomMarkup(rawText);
+
         chrome.runtime.sendMessage(
             {
                 action: "translate",
-                text: rawText,
+                text: preparedText,
                 sourceLang: sourceLang,
                 targetLang: targetLang
             },
@@ -39,7 +41,8 @@ async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
                     return;
                 }
 
-                resolve(response.translated);
+                const finalText = postprocessCustomMarkup(response.translated, mappings);
+                resolve(finalText);
             }
         );
     });
@@ -52,6 +55,8 @@ async function runTranslations() {
     }
 
     const tables = document.querySelectorAll("form table");
+    const total = tables.length;
+    let processed = 0;
 
     for (const table of tables) {
         if (translationHalted) break;
@@ -76,10 +81,12 @@ async function runTranslations() {
             }
 
             sk.value = "Translating...";
+            processed = processed + 1;
 
             try {
                 const translated = await translateText(sourceText, sourceLang, "SK");
                 sk.value = translated;
+                showErrorPopup(`Preklad: preložil som ${processed}/${total} textov.`);
             } catch (err) {
                 console.error("Translation failed:", err);
                 sk.value = "";
@@ -88,7 +95,7 @@ async function runTranslations() {
         }
     }
 
-    showErrorPopup(`Hotovo! Preložených ${tables.length} textov.`);
+    showErrorPopup(`Hotovo! Preložených ${total} textov.`);
 }
 
 async function runAutosave() {
@@ -132,7 +139,7 @@ async function runAutosave() {
     for (let i = 0; i < saveButtons.length; i++) {
         const btn = saveButtons[i];
         btn.click();
-        console.log(`Autosave: klikol som na ${i + 1}/${saveButtons.length}`);
+        showErrorPopup(`Autosave: uložil som ${i + 1}/${saveButtons.length} textov.`);
         await new Promise(r => setTimeout(r, 700));
     }
 
@@ -146,6 +153,28 @@ async function runAutosave() {
     cleanupScript.remove();
 
     showErrorPopup(`Hotovo! Uložených ${saveButtons.length} položiek.`);
+}
+
+function preprocessCustomMarkup(text) {
+    let mappings = [];
+    let counter = 0;
+
+    text = text.replace(/\+\+\+([\s\S]+?)\+\+\+/g, (_, inner) => {
+        const id = counter++;
+        mappings.push({ placeholderStart: `__BOLD_${id}__`, placeholderEnd: `__END_BOLD_${id}__`, original: `+++${inner}+++` });
+        return `__BOLD_${id}__${inner}__END_BOLD_${id}__`;
+    });
+
+    return { text, mappings };
+}
+
+function postprocessCustomMarkup(text, mappings) {
+    for (const { placeholderStart, placeholderEnd, original } of mappings) {
+        const regex = new RegExp(`${placeholderStart}([\\s\\S]+?)${placeholderEnd}`, "g");
+        text = text.replace(regex, (_, inner) => `+++${inner}+++`);
+    }
+
+    return text;
 }
 
 function showErrorPopup(message) {
