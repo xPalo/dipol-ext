@@ -161,7 +161,12 @@ function preprocessCustomMarkup(text) {
 
     text = text.replace(/\+\+\+([\s\S]+?)\+\+\+/g, (_, inner) => {
         const id = counter++;
-        mappings.push({ placeholderStart: `__BOLD_${id}__`, placeholderEnd: `__END_BOLD_${id}__`, original: `+++${inner}+++` });
+        mappings.push({
+            placeholderStart: `__BOLD_${id}__`,
+            placeholderEnd: `__END_BOLD_${id}__`,
+            original: `+++${inner}+++`
+        });
+
         return `__BOLD_${id}__${inner}__END_BOLD_${id}__`;
     });
 
