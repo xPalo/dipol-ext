@@ -18,10 +18,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.dipol.com.pl/*",
-        "https://*/*",
-        "http://*/*",
-        "file:///*"
+        "https://tools.dipol.sk/*"
       ],
       "js": [
         "content.js"

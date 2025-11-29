@@ -3,8 +3,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const status = document.getElementById("status");
     const saveBtn = document.getElementById("save");
     const usageEl = document.getElementById("usage");
+    const copyBtn = document.getElementById("copyKey");
 
-    const {deeplKey} = await chrome.storage.sync.get("deeplKey");
+    const { deeplKey } = await chrome.storage.sync.get("deeplKey");
     if (deeplKey) {
         input.placeholder = `Current: ${deeplKey.slice(0, 12)}...`;
         await updateUsage(deeplKey);
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        await chrome.storage.sync.set({deeplKey: value});
+        await chrome.storage.sync.set({ deeplKey: value });
         status.textContent = "API key saved!";
         status.style.color = "green";
 
@@ -27,6 +28,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         input.placeholder = `Current: ${value.slice(0, 12)}...`;
 
         await updateUsage(value);
+    });
+
+    copyBtn.addEventListener("click", async () => {
+        const { deeplKey } = await chrome.storage.sync.get("deeplKey");
+
+        if (!deeplKey) {
+            status.textContent = "No API key to copy.";
+            status.style.color = "red";
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(deeplKey);
+            status.textContent = "Copied to clipboard!";
+            status.style.color = "green";
+        } catch (err) {
+            console.error(err);
+            status.textContent = "Failed to copy.";
+            status.style.color = "red";
+        }
     });
 
     async function updateUsage(apiKey) {
@@ -50,7 +71,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const percent = Math.min((used / limit) * 100, 100);
 
             usageEl.textContent = `🔠 ${used.toLocaleString()} / ${limit.toLocaleString()} characters used (${percent.toFixed(1)}%)`;
-            usageEl.style.color = percent > 90 ? "red" : percent > 70 ? "orange" : "green";
+            usageEl.style.color = percent > 90 ? "red" :
+                percent > 70 ? "orange" :
+                    "green";
         } catch (err) {
             console.error(err);
             usageEl.textContent = "❌ Could not fetch usage info.";

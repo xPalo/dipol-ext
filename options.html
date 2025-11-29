@@ -1,106 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+<head>
+    <meta charset="utf-8"/>
     <title>DIPOL Auto Translator — Settings</title>
     <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f7f8fa;
-        color: #222;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7f8fa;
+            color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-      .container {
-        background: #fff;
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        width: 420px;
-        text-align: center;
-      }
+        .container {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 420px;
+            text-align: center;
+        }
 
-      h3 {
-        margin-top: 0;
-        margin-bottom: 1rem;
-        font-size: 1.3rem;
-        color: #007aff;
-      }
+        h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            color: #007aff;
+        }
 
-      input[type="text"] {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        box-sizing: border-box;
-        outline: none;
-        transition: border 0.2s ease;
-      }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.2s ease;
+        }
 
-      input[type="text"]:focus {
-        border-color: #007aff;
-      }
+        input[type="text"]:focus {
+            border-color: #007aff;
+        }
 
-      button {
-        margin-top: 1rem;
-        background-color: #007aff;
-        color: white;
-        border: none;
-        padding: 10px 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background 0.2s ease;
-      }
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
 
-      button:hover {
-        background-color: #005fce;
-      }
+        button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+            transition: background 0.2s ease;
+        }
 
-      #status {
-        margin-top: 1rem;
-        font-size: 13px;
-        color: #007a55;
-        min-height: 1em;
-      }
+        button:hover {
+            background-color: #005fce;
+        }
 
-      .usage-section {
-        border-top: 1px solid #eee;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        font-weight: bold;
-      }
+        /* Secondary button: Copy */
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #333;
+        }
 
-      .usage-section h4 {
-        margin: 0 0 0.5rem;
-        font-size: 1rem;
-        color: #444;
-      }
+        .btn-secondary:hover {
+            background-color: #d5d7db;
+        }
 
-      #usage {
-        font-size: 14px;
-        color: #555;
-      }
+        #status {
+            margin-top: 1rem;
+            font-size: 13px;
+            color: #007a55;
+            min-height: 1em;
+        }
+
+        .usage-section {
+            border-top: 1px solid #eee;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            font-weight: bold;
+        }
+
+        .usage-section h4 {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            color: #444;
+        }
+
+        #usage {
+            font-size: 14px;
+            color: #555;
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <h3>🔑 DeepL API Key</h3>
-      <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..." />
-      <button id="save">💾 Save</button>
-      <p id="status"></p>
+</head>
+<body>
+<div class="container">
+    <h3>🔑 DeepL API Key</h3>
 
-      <div class="usage-section">
-        <h4>📊 Usage</h4>
-        <p id="usage">No DeepL API key provided, we'll attempt to translate via Google.</p>
-      </div>
+    <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..."/>
+
+    <div class="btn-row">
+        <button id="save">💾 Save</button>
+        <button id="copyKey" class="btn-secondary">📋 Copy key</button>
     </div>
 
-    <script src="options.js"></script>
-  </body>
+    <p id="status"></p>
+
+    <div class="usage-section">
+        <h4>📊 Usage</h4>
+        <p id="usage">No DeepL API key provided, we'll attempt to translate via Google.</p>
+    </div>
+</div>
+
+<script src="options.js"></script>
+</body>
 </html>
