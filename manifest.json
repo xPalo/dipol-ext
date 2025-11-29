@@ -18,6 +18,7 @@
   "content_scripts": [
     {
       "matches": [
+        "file:///*",
         "https://tools.dipol.sk/*"
       ],
       "js": [

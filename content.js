@@ -1,5 +1,38 @@
 let translationHalted = false;
 
+const CUSTOM_MARKUP_RULES = [
+    {
+        type: "paired",
+        marker: "+++",
+        name: "BOLD"
+    },
+    {
+        type: "paired",
+        marker: "###",
+        name: "HEADER"
+    },
+    {
+        type: "paired",
+        marker: "===",
+        name: "EQUALS"
+    },
+    {
+        type: "paired",
+        marker: "///",
+        name: "ITALIC"
+    },
+    {
+        type: "single",
+        marker: "***",
+        name: "STAR"
+    },
+    {
+        type: "single",
+        marker: ">>>",
+        name: "MORE"
+    }
+];
+
 async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
     return new Promise((resolve, reject) => {
         if (translationHalted) {
@@ -7,7 +40,7 @@ async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
             return;
         }
 
-        const { text: preparedText, mappings } = preprocessCustomMarkup(rawText);
+        const {text: preparedText, mappings} = preprocessCustomMarkup(rawText);
 
         chrome.runtime.sendMessage(
             {
@@ -110,47 +143,12 @@ async function runAutosave() {
         return;
     }
 
-    console.log(`Našiel som ${saveButtons.length} tlačidiel na uloženie.`);
-
-    const scriptEl = document.createElement("script");
-    scriptEl.id = "autosave-confirm-bypass";
-    scriptEl.textContent = `
-    (function() {
-      window._autosaveBypassActive = true;
-      const originalConfirm = window.confirm;
-      const originalAlert = window.alert;
-      window.confirm = function(msg) { 
-        console.log("[AutoConfirm] Potvrdené:", msg);
-        return true; 
-      };
-      window.alert = function(msg) { 
-        console.log("[AutoAlert] Preskočené:", msg);
-      };
-      window._restoreAlerts = function() {
-        window.confirm = originalConfirm;
-        window.alert = originalAlert;
-        window._autosaveBypassActive = false;
-        console.log("[AutoConfirm] Obnovené pôvodné správanie.");
-      };
-    })();
-    `;
-    (document.head || document.documentElement).appendChild(scriptEl);
-
     for (let i = 0; i < saveButtons.length; i++) {
         const btn = saveButtons[i];
         btn.click();
         showErrorPopup(`Autosave: uložil som ${i + 1}/${saveButtons.length} textov.`);
         await new Promise(r => setTimeout(r, 700));
     }
-
-    const cleanupScript = document.createElement("script");
-    cleanupScript.textContent = `
-    if (window._autosaveBypassActive && typeof window._restoreAlerts === 'function') {
-      window._restoreAlerts();
-    }
-    `;
-    (document.head || document.documentElement).appendChild(cleanupScript);
-    cleanupScript.remove();
 
     showErrorPopup(`Hotovo! Uložených ${saveButtons.length} položiek.`);
 }
@@ -159,27 +157,69 @@ function preprocessCustomMarkup(text) {
     let mappings = [];
     let counter = 0;
 
-    text = text.replace(/\+\+\+([\s\S]+?)\+\+\+/g, (_, inner) => {
-        const id = counter++;
-        mappings.push({
-            placeholderStart: `__BOLD_${id}__`,
-            placeholderEnd: `__END_BOLD_${id}__`,
-            original: `+++${inner}+++`
-        });
+    for (const rule of CUSTOM_MARKUP_RULES) {
 
-        return `__BOLD_${id}__${inner}__END_BOLD_${id}__`;
-    });
+        if (rule.type === "paired") {
+            const regex = new RegExp(
+                `${escapeRegex(rule.marker)}([\\s\\S]+?)${escapeRegex(rule.marker)}`,
+                "g"
+            );
 
-    return { text, mappings };
+            text = text.replace(regex, (_, inner) => {
+                const id = counter++;
+                const start = `__${rule.name}_${id}__`;
+                const end = `__END_${rule.name}_${id}__`;
+
+                mappings.push({
+                    type: "paired",
+                    start,
+                    end,
+                    marker: rule.marker,
+                });
+
+                return `${start}${inner}${end}`;
+            });
+        }
+
+        if (rule.type === "single") {
+            const regex = new RegExp(escapeRegex(rule.marker), "g");
+
+            text = text.replace(regex, () => {
+                const id = counter++;
+                const placeholder = `__${rule.name}_${id}__`;
+
+                mappings.push({
+                    type: "single",
+                    placeholder,
+                    marker: rule.marker
+                });
+
+                return placeholder;
+            });
+        }
+    }
+
+    return {text, mappings};
 }
 
 function postprocessCustomMarkup(text, mappings) {
-    for (const { placeholderStart, placeholderEnd, original } of mappings) {
-        const regex = new RegExp(`${placeholderStart}([\\s\\S]+?)${placeholderEnd}`, "g");
-        text = text.replace(regex, (_, inner) => `+++${inner}+++`);
+    for (const map of mappings) {
+        if (map.type === "paired") {
+            const regex = new RegExp(`${map.start}([\\s\\S]+?)${map.end}`, "g");
+            text = text.replace(regex, (_, inner) => `${map.marker}${inner}${map.marker}`);
+        }
+
+        if (map.type === "single") {
+            const regex = new RegExp(map.placeholder, "g");
+            text = text.replace(regex, map.marker);
+        }
     }
 
     return text;
+}
+
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function showErrorPopup(message) {
