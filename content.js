@@ -8,8 +8,18 @@ const CUSTOM_MARKUP_RULES = [
     },
     {
         type: "paired",
-        marker: "###",
+        marker: "---",
+        name: "HEAD"
+    },
+    {
+        type: "paired",
+        marker: "^H2^",
         name: "HEADER"
+    },
+    {
+        type: "paired",
+        marker: "###",
+        name: "PARAGRAPH"
     },
     {
         type: "paired",
@@ -205,13 +215,18 @@ function preprocessCustomMarkup(text) {
 function postprocessCustomMarkup(text, mappings) {
     for (const map of mappings) {
         if (map.type === "paired") {
-            const regex = new RegExp(`${map.start}([\\s\\S]+?)${map.end}`, "g");
-            text = text.replace(regex, (_, inner) => `${map.marker}${inner}${map.marker}`);
+            const { start, end, marker } = map;
+            let startIndex = text.indexOf(start);
+            let endIndex = text.indexOf(end);
+
+            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                const inner = text.substring(startIndex + start.length, endIndex);
+                text = text.substring(0, startIndex) + marker + inner + marker + text.substring(endIndex + end.length);
+            }
         }
 
         if (map.type === "single") {
-            const regex = new RegExp(map.placeholder, "g");
-            text = text.replace(regex, map.marker);
+            text = text.split(map.placeholder).join(map.marker);
         }
     }
 
