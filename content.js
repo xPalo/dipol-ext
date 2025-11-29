@@ -2,42 +2,42 @@ let translationHalted = false;
 
 const CUSTOM_MARKUP_RULES = [
     {
-        type: "paired",
+        marker: "{{",
+        name: "START"
+    },
+    {
+        marker: "}}",
+        name: "STOP"
+    },
+    {
         marker: "+++",
         name: "BOLD"
     },
     {
-        type: "paired",
         marker: "---",
         name: "HEAD"
     },
     {
-        type: "paired",
         marker: "^H2^",
         name: "HEADER"
     },
     {
-        type: "paired",
         marker: "###",
-        name: "PARAGRAPH"
+        name: "GRAPH"
     },
     {
-        type: "paired",
         marker: "===",
         name: "EQUALS"
     },
     {
-        type: "paired",
         marker: "///",
         name: "ITALIC"
     },
     {
-        type: "single",
         marker: "***",
         name: "STAR"
     },
     {
-        type: "single",
         marker: ">>>",
         name: "MORE"
     }
@@ -168,45 +168,19 @@ function preprocessCustomMarkup(text) {
     let counter = 0;
 
     for (const rule of CUSTOM_MARKUP_RULES) {
+        const regex = new RegExp(escapeRegex(rule.marker), "g");
 
-        if (rule.type === "paired") {
-            const regex = new RegExp(
-                `${escapeRegex(rule.marker)}([\\s\\S]+?)${escapeRegex(rule.marker)}`,
-                "g"
-            );
+        text = text.replace(regex, () => {
+            const id = counter++;
+            const placeholder = `__${rule.name}${id}__`;
 
-            text = text.replace(regex, (_, inner) => {
-                const id = counter++;
-                const start = `__${rule.name}_${id}__`;
-                const end = `__END_${rule.name}_${id}__`;
-
-                mappings.push({
-                    type: "paired",
-                    start,
-                    end,
-                    marker: rule.marker,
-                });
-
-                return `${start}${inner}${end}`;
+            mappings.push({
+                placeholder,
+                marker: rule.marker
             });
-        }
 
-        if (rule.type === "single") {
-            const regex = new RegExp(escapeRegex(rule.marker), "g");
-
-            text = text.replace(regex, () => {
-                const id = counter++;
-                const placeholder = `__${rule.name}_${id}__`;
-
-                mappings.push({
-                    type: "single",
-                    placeholder,
-                    marker: rule.marker
-                });
-
-                return placeholder;
-            });
-        }
+            return placeholder;
+        });
     }
 
     return {text, mappings};
@@ -214,20 +188,7 @@ function preprocessCustomMarkup(text) {
 
 function postprocessCustomMarkup(text, mappings) {
     for (const map of mappings) {
-        if (map.type === "paired") {
-            const { start, end, marker } = map;
-            let startIndex = text.indexOf(start);
-            let endIndex = text.indexOf(end);
-
-            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-                const inner = text.substring(startIndex + start.length, endIndex);
-                text = text.substring(0, startIndex) + marker + inner + marker + text.substring(endIndex + end.length);
-            }
-        }
-
-        if (map.type === "single") {
-            text = text.split(map.placeholder).join(map.marker);
-        }
+        text = text.split(map.placeholder).join(map.marker);
     }
 
     return text;
