@@ -107,20 +107,20 @@
 <body>
 <div class="container">
     <h3>🔑 DeepL API Key</h3>
+    <input id="deeplKey" type="text" placeholder="DeepL-Auth-Key..." />
 
-    <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..."/>
+    <h3>🧠 OpenAI API Key</h3>
+    <input id="openaiKey" type="text" placeholder="sk-..." />
 
-    <div class="btn-row">
-        <button id="save">💾 Save</button>
-        <button id="copyKey" class="btn-secondary">📋 Copy key</button>
-    </div>
+    <h3>🌐 Prekladový engine</h3>
+    <select id="engine">
+        <option selected value="google">🔓Google Translate</option>
+        <option value="deepl">🔒DeepL</option>
+        <option value="openai">🔒OpenAI GPT</option>
+    </select>
 
+    <button id="save">💾 Uložiť</button>
     <p id="status"></p>
-
-    <div class="usage-section">
-        <h4>📊 Usage</h4>
-        <p id="usage">No DeepL API key provided, we'll attempt to translate via Google.</p>
-    </div>
 </div>
 
 <script src="options.js"></script>
