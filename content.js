@@ -44,13 +44,22 @@ const CUSTOM_MARKUP_RULES = [
 ];
 
 async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
+    const { preprocessingEnabled = true } = await chrome.storage.sync.get("preprocessingEnabled");
+
     return new Promise((resolve, reject) => {
         if (translationHalted) {
             reject("Translations halted due to previous error.");
             return;
         }
 
-        const {text: preparedText, mappings} = preprocessCustomMarkup(rawText);
+        let preparedText = rawText;
+        let mappings = [];
+
+        if (preprocessingEnabled) {
+            const processed = preprocessCustomMarkup(rawText);
+            preparedText = processed.text;
+            mappings = processed.mappings;
+        }
 
         chrome.runtime.sendMessage(
             {
@@ -84,7 +93,11 @@ async function translateText(rawText, sourceLang = "PL", targetLang = "SK") {
                     return;
                 }
 
-                const finalText = postprocessCustomMarkup(response.translated, mappings);
+                let finalText = response.translated;
+                if (preprocessingEnabled) {
+                    finalText = postprocessCustomMarkup(finalText, mappings);
+                }
+
                 resolve(finalText);
             }
         );
@@ -97,6 +110,7 @@ async function runTranslations() {
         return;
     }
 
+    const { engine = "google" } = await chrome.storage.sync.get("engine");
     const tables = document.querySelectorAll("form table");
     const total = tables.length;
     let processed = 0;
@@ -129,7 +143,7 @@ async function runTranslations() {
             try {
                 const translated = await translateText(sourceText, sourceLang, "SK");
                 sk.value = translated;
-                showErrorPopup(`Preklad: preložil som ${processed}/${total} textov.`);
+                showErrorPopup(`[${engine.toUpperCase()}] Preklad: preložil som ${processed}/${total} textov.`);
             } catch (err) {
                 console.error("Translation failed:", err);
                 sk.value = "";

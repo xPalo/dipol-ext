@@ -1,69 +1,134 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "translate") {
-        (async () => {
-            const {text, sourceLang, targetLang} = message;
-            const {deeplKey} = await chrome.storage.sync.get("deeplKey");
+    if (message.action !== "translate") return;
 
-            async function googleTranslateFallback() {
-                try {
-                    const googleRes = await fetch(
-                        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang.toLowerCase()}&tl=${targetLang.toLowerCase()}&dt=t&q=${encodeURIComponent(text)}`
-                    );
-                    const googleData = await googleRes.json();
-                    const translated = googleData?.[0]?.[0]?.[0];
+    (async () => {
+        const { text, sourceLang, targetLang } = message;
+        const { engine = "deepl", deeplKey, openaiKey } = await chrome.storage.sync.get(["engine", "deeplKey", "openaiKey"]);
 
-                    if (translated) {
-                        sendResponse({translated, note: "Translated via Google fallback"});
-                    } else {
-                        sendResponse({error: "Google Translate fallback failed"});
-                    }
-                } catch (gErr) {
-                    console.error("Google Translate fallback error:", gErr);
-                    sendResponse({error: "Both DeepL and Google fallback failed"});
-                }
-            }
+        /* ---------------- GOOGLE ---------------- */
 
-            if (!deeplKey) {
-                console.warn("No DeepL key found — using Google fallback.");
-                await googleTranslateFallback();
-                return;
-            }
+        async function translateWithGoogle() {
+            console.log("Translating with Google");
 
             try {
-                const deeplResponse = await fetch("https://api-free.deepl.com/v2/translate", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Authorization": `DeepL-Auth-Key ${deeplKey}`
-                    },
-                    body: new URLSearchParams({
-                        text,
-                        source_lang: sourceLang,
-                        target_lang: targetLang
-                    })
-                });
+                const res = await fetch(
+                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang.toLowerCase()}&tl=${targetLang.toLowerCase()}&dt=t&q=${encodeURIComponent(text)}`
+                );
+                const data = await res.json();
+                const translated = data?.[0]?.[0]?.[0];
 
-                if (!deeplResponse.ok) {
-                    const errorText = await deeplResponse.text();
-                    console.warn("DeepL API error:", deeplResponse.status, errorText);
-                    await googleTranslateFallback();
-                    return;
-                }
+                if (!translated) throw new Error("Invalid Google response");
 
-                const data = await deeplResponse.json();
-
-                if (data.translations && data.translations[0]) {
-                    sendResponse({translated: data.translations[0].text});
-                } else {
-                    console.warn("Invalid DeepL response:", data);
-                    await googleTranslateFallback();
-                }
+                return { translated, provider: "google" };
             } catch (err) {
-                console.error("DeepL translation failed:", err);
-                await googleTranslateFallback();
+                throw new Error("Google Translate failed");
             }
-        })();
+        }
 
-        return true;
-    }
+        /* ---------------- DEEPL ---------------- */
+
+        async function translateWithDeepL() {
+            console.log("Translating with DeepL");
+
+            if (!deeplKey) throw new Error("Missing DeepL API key");
+
+            const res = await fetch("https://api-free.deepl.com/v2/translate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": `DeepL-Auth-Key ${deeplKey}`
+                },
+                body: new URLSearchParams({
+                    text,
+                    source_lang: sourceLang,
+                    target_lang: targetLang
+                })
+            });
+
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`DeepL error ${res.status}: ${body}`);
+            }
+
+            const data = await res.json();
+            const translated = data?.translations?.[0]?.text;
+
+            if (!translated) throw new Error("Invalid DeepL response");
+
+            return { translated, provider: "deepl" };
+        }
+
+        /* ---------------- OPENAI ---------------- */
+
+        async function translateWithOpenAI() {
+            console.log("Translating with GPT");
+
+            if (!openaiKey) throw new Error("Missing OpenAI API key");
+
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${openaiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a professional translation engine. Translate the text to Slovak. Preserve all formatting, punctuation and custom markup such as +++, ###, *** and placeholders."
+                        },
+                        {
+                            role: "user",
+                            content: text
+                        }
+                    ],
+                    temperature: 0.2
+                })
+            });
+
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`OpenAI error ${res.status}: ${body}`);
+            }
+
+            const data = await res.json();
+            const translated = data?.choices?.[0]?.message?.content;
+
+            if (!translated) throw new Error("Invalid OpenAI response");
+
+            return { translated, provider: "openai" };
+        }
+
+        /* ---------------- ENGINE SWITCH ---------------- */
+
+        try {
+            let result;
+
+            if (engine === "openai") {
+                try {
+                    result = await translateWithOpenAI();
+                } catch (e) {
+                    console.warn("OpenAI failed → fallback DeepL", e);
+                    result = await translateWithDeepL();
+                }
+            } else if (engine === "deepl") {
+                try {
+                    result = await translateWithDeepL();
+                } catch (e) {
+                    console.warn("DeepL failed → fallback Google", e);
+                    result = await translateWithGoogle();
+                }
+            } else {
+                result = await translateWithGoogle();
+            }
+
+            sendResponse(result);
+        } catch (finalError) {
+            console.error("Translation failed completely:", finalError);
+            sendResponse({ error: finalError.message });
+        }
+    })();
+
+    return true; // async response
 });
