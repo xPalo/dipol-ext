@@ -110,7 +110,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     result = await translateWithOpenAI();
                 } catch (e) {
                     console.warn("OpenAI failed → fallback DeepL", e);
-                    result = await translateWithDeepL();
+                    result = await translateWithGoogle();
                 }
             } else if (engine === "deepl") {
                 try {

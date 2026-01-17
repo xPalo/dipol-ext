@@ -15,16 +15,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     chrome.storage.sync.get(["deeplKey", "openaiKey", "engine"], (data) => {
-        if (data.deeplKey) {
-            let input = document.getElementById("deeplKey");
-            input.value = "";
-            input.placeholder = `Current: ${data.deeplKey.slice(0, 12)}...`;
-        }
-        if (data.openaiKey) {
-            let input = document.getElementById("openaiKey");
-            input.value = "";
-            input.placeholder = `Current: ${data.openaiKey.slice(0, 12)}...`;
-        }
+        if (data.deeplKey) document.getElementById("deeplKey").value = data.deeplKey;
+        if (data.openaiKey) document.getElementById("openaiKey").value = data.openaiKey;
         if (data.engine) document.getElementById("engine").value = data.engine;
     });
 
