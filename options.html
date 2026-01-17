@@ -24,11 +24,11 @@
             text-align: center;
         }
 
-        h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-            color: #007aff;
+        h4 {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            font-size: 1rem;
+            color: #007;
         }
 
         input[type="text"] {
@@ -43,17 +43,11 @@
         }
 
         input[type="text"]:focus {
-            border-color: #007aff;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            border-color: #5F7A61;
         }
 
         button {
-            background-color: #007aff;
+            background-color: #5F7A61;
             color: white;
             border: none;
             padding: 10px 10px;
@@ -68,16 +62,6 @@
             background-color: #005fce;
         }
 
-        /* Secondary button: Copy */
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background-color: #d5d7db;
-        }
-
         #status {
             margin-top: 1rem;
             font-size: 13px;
@@ -85,42 +69,141 @@
             min-height: 1em;
         }
 
-        .usage-section {
-            border-top: 1px solid #eee;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            font-weight: bold;
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: #f2f4f7;
         }
 
-        .usage-section h4 {
-            margin: 0 0 0.5rem;
-            font-size: 1rem;
-            color: #444;
-        }
-
-        #usage {
+        .setting-label {
             font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        /* Toggle */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #cfd4da;
+            border-radius: 999px;
+            transition: background-color 0.2s ease;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            top: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Checked */
+        .toggle input:checked + .slider {
+            background-color: #5F7A61;
+        }
+
+        .toggle input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* --- Select wrapper --- */
+        .select-wrapper {
+            position: relative;
+            width: 180px;
+        }
+
+        .select-wrapper::after {
+            content: "▾";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 12px;
             color: #555;
+        }
+
+        /* --- Select --- */
+        .select-wrapper select {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            padding: 8px 32px 8px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #cfd4da;
+            background-color: #fff;
+            color: #222;
+            cursor: pointer;
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .select-wrapper select:hover {
+            border-color: #aab0b6;
+        }
+
+        .select-wrapper select:focus {
+            border-color: #5F7A61;
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15);
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h3>🔑 DeepL API Key</h3>
+    <h4>🔑 DeepL API Key</h4>
+    <input id="deeplKey" type="text" placeholder="DeepL-Auth-Key..." />
 
-    <input id="apiKey" type="text" placeholder="DeepL-Auth-Key..."/>
+    <h4>🧠 OpenAI API Key</h4>
+    <input id="openaiKey" type="text" placeholder="sk-..." />
 
-    <div class="btn-row">
-        <button id="save">💾 Save</button>
-        <button id="copyKey" class="btn-secondary">📋 Copy key</button>
+    <h4>🌐 Prekladový engine</h4>
+    <div class="setting-row">
+        <span class="setting-label"><b>Prekladový engine</b></span>
+
+        <div class="select-wrapper">
+            <select id="engine">
+                <option value="google">🔓 Google Translate</option>
+                <option value="deepl">🔒 DeepL</option>
+                <option value="openai">🔒 OpenAI GPT</option>
+            </select>
+        </div>
     </div>
 
+    <br>
+    <div class="setting-row">
+        <span class="setting-label"><b>Použiť preprocessing značiek (+++ ### ***)</b></span>
+        <label class="toggle">
+            <input type="checkbox" id="preprocessingEnabled" />
+            <span class="slider"></span>
+        </label>
+    </div>
+    <br>
+
+    <button id="save">💾 Uložiť</button>
     <p id="status"></p>
-
-    <div class="usage-section">
-        <h4>📊 Usage</h4>
-        <p id="usage">No DeepL API key provided, we'll attempt to translate via Google.</p>
-    </div>
 </div>
 
 <script src="options.js"></script>
