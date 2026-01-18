@@ -143,7 +143,7 @@ async function runTranslations() {
             try {
                 const translated = await translateText(sourceText, sourceLang, "SK");
                 sk.value = translated;
-                showErrorPopup(`[${engine.toUpperCase()}] Preklad: preložil som ${processed}/${total} textov.`);
+                showInfoPopup(`[${engine.toUpperCase()}] Preklad: preložil som ${processed}/${total} textov.`);
             } catch (err) {
                 console.error("Translation failed:", err);
                 sk.value = "";
@@ -152,7 +152,7 @@ async function runTranslations() {
         }
     }
 
-    showErrorPopup(`Hotovo! Preložených ${total} textov.`);
+    showInfoPopup(`Hotovo! Preložených ${total} textov.`);
 }
 
 async function runAutosave() {
@@ -170,11 +170,12 @@ async function runAutosave() {
     for (let i = 0; i < saveButtons.length; i++) {
         const btn = saveButtons[i];
         btn.click();
-        showErrorPopup(`Autosave: uložil som ${i + 1}/${saveButtons.length} textov.`);
+        showInfoPopup(`Autosave: uložil som ${i + 1}/${saveButtons.length} textov.`);
+
         await new Promise(r => setTimeout(r, 700));
     }
 
-    showErrorPopup(`Hotovo! Uložených ${saveButtons.length} položiek.`);
+    showInfoPopup(`Hotovo! Uložených ${saveButtons.length} položiek.`);
 }
 
 function preprocessCustomMarkup(text) {
@@ -210,6 +211,19 @@ function postprocessCustomMarkup(text, mappings) {
 
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function showInfoPopup(message) {
+    const existing = document.getElementById("translation-info-popup");
+    if (existing) existing.remove();
+
+    const popup = document.createElement("div");
+    popup.id = "translation-info-popup";
+    popup.textContent = message;
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => popup.remove(), 5000);
 }
 
 function showErrorPopup(message) {

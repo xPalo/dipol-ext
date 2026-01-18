@@ -43,11 +43,11 @@
         }
 
         input[type="text"]:focus {
-            border-color: #5F7A61;
+            border-color: #3E6667;
         }
 
         button {
-            background-color: #5F7A61;
+            background-color: #4F7C7D;
             color: white;
             border: none;
             padding: 10px 10px;
@@ -59,7 +59,7 @@
         }
 
         button:hover {
-            background-color: #005fce;
+            background-color: #3E6667;
         }
 
         #status {
@@ -121,7 +121,7 @@
 
         /* Checked */
         .toggle input:checked + .slider {
-            background-color: #5F7A61;
+            background-color: #4F7C7D;
         }
 
         .toggle input:checked + .slider::before {
@@ -166,8 +166,14 @@
         }
 
         .select-wrapper select:focus {
-            border-color: #5F7A61;
+            border-color: #3E6667;
             box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15);
+        }
+
+        .setting-note {
+            font-size: 12px;
+            color: #7a7a7a;
+            line-height: 1.2;
         }
     </style>
 </head>
@@ -194,7 +200,11 @@
 
     <br>
     <div class="setting-row">
-        <span class="setting-label"><b>Použiť preprocessing značiek (+++ ### ***)</b></span>
+        <span class="setting-label">
+            <b>Použiť preprocessing značiek (+++ ### ***)</b>
+            <br>
+            <small class="setting-note">Neodporúča sa používať s AI prekladovým enginom</small>
+        </span>
         <label class="toggle">
             <input type="checkbox" id="preprocessingEnabled" />
             <span class="slider"></span>
