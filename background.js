@@ -3,7 +3,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     (async () => {
         const { text, sourceLang, targetLang } = message;
-        const { engine = "deepl", deeplKey, openaiKey } = await chrome.storage.sync.get(["engine", "deeplKey", "openaiKey"]);
+        const { engine = "deepl", deeplKey, openaiKey, openaiPrompt } =
+            await chrome.storage.sync.get(["engine", "deeplKey", "openaiKey", "openaiPrompt"]);
 
         /* ---------------- GOOGLE ---------------- */
 
@@ -65,6 +66,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             if (!openaiKey) throw new Error("Missing OpenAI API key");
 
+            const prompt = openaiPrompt?.trim() ||
+                "You are a professional translation engine. Translate the text to Slovak. Preserve all formatting, punctuation and custom markup such as +++, ###, *** and placeholders.";
+
             const res = await fetch("https://api.openai.com/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -74,14 +78,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 body: JSON.stringify({
                     model: "gpt-4o-mini",
                     messages: [
-                        {
-                            role: "system",
-                            content: "You are a professional translation engine. Translate the text to Slovak. Preserve all formatting, punctuation and custom markup such as +++, ###, *** and placeholders."
-                        },
-                        {
-                            role: "user",
-                            content: text
-                        }
+                        { role: "system", content: prompt },
+                        { role: "user", content: text }
                     ],
                     temperature: 0.2
                 })

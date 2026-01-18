@@ -24,11 +24,20 @@
             text-align: center;
         }
 
+        h2 {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3E6667;
+            text-decoration: underline #3E6667;
+        }
+
         h4 {
             margin-top: 0.5rem;
             margin-bottom: 0;
             font-size: 1rem;
-            color: #007;
+            color: #3E6667;
         }
 
         input[type="text"] {
@@ -63,9 +72,9 @@
         }
 
         #status {
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             font-size: 13px;
-            color: #007a55;
+            color: #3E6667;
             min-height: 1em;
         }
 
@@ -179,6 +188,8 @@
 </head>
 <body>
 <div class="container">
+    <h2>DIPOL Auto Translator — Nastavenia</h2>
+    <br>
     <h4>🔑 DeepL API Key</h4>
     <input id="deeplKey" type="text" placeholder="DeepL-Auth-Key..." />
 
@@ -196,6 +207,12 @@
                 <option value="openai">🔒 OpenAI GPT</option>
             </select>
         </div>
+    </div>
+
+    <div class="setting-row" id="openaiPromptRow" style="display:none; margin-top:12px;">
+        <span class="setting-label"><b>AI Prompt pre OpenAI</b></span>
+        <textarea id="openaiPrompt" rows="3" style="width:100%; font-size:13px; padding:6px;"></textarea>
+        <small class="setting-note">Tento prompt sa použije pri preklade cez OpenAI GPT.</small>
     </div>
 
     <br>
